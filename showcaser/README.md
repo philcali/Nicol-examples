@@ -8,3 +8,5 @@ many features:
   * Objectifying game segments into `Scene`'s
   * Messing with shapes
   * Basic collision detection
+
+![Showcaser Screenshot](http://dl.dropbox.com/u/1030/showcaser.png "Showcaser")
