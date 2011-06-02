@@ -10,4 +10,5 @@ class NicolExamples(info: ProjectInfo) extends ParentProject(info) {
   def genProject(name: String) = project(name, name, new NicolExample(_))
 
   lazy val tictactoe = genProject("tictactoe") 
+  lazy val showcaser = genProject("showcaser")
 }
