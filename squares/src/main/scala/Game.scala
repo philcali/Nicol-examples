@@ -140,7 +140,7 @@ object Main {
 
       override def update = {
         val (mx, my) = Mouse.apply
-        pos = Vector(mx, 600 - my)
+        pos = Vector(mx, my)
       }
     }
 
