@@ -3,3 +3,5 @@ target*
 project/boot
 project/plugins/src*
 .DS*
+.idea/
+*.iml
