@@ -14,7 +14,7 @@ object Main extends GameScene with SyncableScene with StandardRenderer {
   var points = 0
 
   def update = {
-    val my = 600 - Mouse.apply._2
+    val my = Mouse.apply._2
 
     Ball.update
 
