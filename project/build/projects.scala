@@ -15,4 +15,5 @@ class NicolExamples(info: ProjectInfo) extends ParentProject(info) with IdeaProj
   lazy val showcaser = genProject("showcaser")
 
   lazy val pong = genProject("pong")
+  lazy val squares = genProject("squares")
 }
