@@ -7,7 +7,7 @@ red squares to survive.
 Some interesting things to point out:
 
   * The use of `Scene` for game state
-  * Accessing specific mouse events viathe `Mouse` object (clicking)
+  * Accessing specific mouse events via the `Mouse` object (clicking)
 
 Here's a screenshot:
 
