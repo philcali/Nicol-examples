@@ -151,7 +151,7 @@ object Start extends FriendlyScene {
     var x = Paddle.x + 30
     var y = Paddle.y - 7
     
-    var speed = 5f
+    var speed = 4f
     var v: Vector = Vector(0, -1)
 
     def init = {
@@ -166,21 +166,39 @@ object Start extends FriendlyScene {
       scene.draw(ball)(FilledCircleRenderer)
     }
 
-    def update = if (!atRest) {
-      v = if (ball.bounds.intersects(World.topSide)) {
-        (0, 1)
-      } else if (ball.bounds.intersects(World.leftSide)) {
-        (1, 0)
-      } else if (ball.bounds.intersects(World.rightSide)) {
-        (-1, 0)
-      } else if (ball.bounds.intersects(Paddle.paddle._2)) {
-        (0, -1)
+    def fire = {
+      v = Vector(1.5f, -1.5f)
+      y = 535
+      atRest = false
+    }
+
+    def checkBall: Vector = {
+      val b = ball
+
+      if (b.bounds.intersects(World.topSide)) {
+        (v.x, v.y * -1)
+      } else if (b.bounds.intersects(World.leftSide) || 
+                 b.bounds.intersects(World.rightSide)) {
+        (v.x * -1, v.y)
+      } else if (b.bounds.intersects(Paddle.paddle._2)) {
+        val center = Paddle.x + 30
+        val diff = x - center
+        val mag = if (diff == 0) 0 
+          else if (diff > 0) 0.5f + diff / 10
+          else -0.5f + diff / 10
+        (mag, v.y * -1)
       } else {
         v
       }
+    }
 
-      y = y + v.y * speed
-      x = x + v.x
+    def update = if (!atRest) {
+      v = checkBall
+
+      val mag = v * speed
+
+      y = y + mag.y 
+      x = x + mag.x
       
       if (y > 600) init 
     }
@@ -202,7 +220,7 @@ object Start extends FriendlyScene {
       Ball.x += d 
     }
 
-    if (space) Ball.atRest = false
+    if (space) Ball.fire 
 
     Ball.update
 
