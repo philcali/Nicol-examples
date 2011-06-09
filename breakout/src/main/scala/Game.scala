@@ -5,6 +5,8 @@ import input.Key._
 import math._
 import geom._
 
+import scala.math.{abs, min}
+
 // Next version of Nicol will support this as a BasicScene
 // But I'm putting it here so that it's future compliant
 trait FriendlyScene extends GameScene with SyncableScene with StandardRenderer
@@ -172,9 +174,7 @@ object Start extends FriendlyScene {
       atRest = false
     }
 
-    def checkBall: Vector = {
-      val b = ball
-
+    def checkBall(b: Circle): Vector = {
       if (b.bounds.intersects(World.topSide)) {
         (v.x, v.y * -1)
       } else if (b.bounds.intersects(World.leftSide) || 
@@ -184,8 +184,8 @@ object Start extends FriendlyScene {
         val center = Paddle.x + 30
         val diff = x - center
         val mag = if (diff == 0) 0 
-          else if (diff > 0) 0.5f + diff / 10
-          else -0.5f + diff / 10
+          else if (diff > 0) 0.5f + diff / 15
+          else -0.5f + diff / 15
         (mag, v.y * -1)
       } else {
         v
@@ -193,7 +193,29 @@ object Start extends FriendlyScene {
     }
 
     def update = if (!atRest) {
-      v = checkBall
+      val b = ball
+      v = checkBall(ball)
+
+      v = Bricks.bricks.find(br => b.bounds.intersects(br.box)) match {
+        case Some(brick) => 
+          Bricks.bricks -= brick
+          // Where did the ball strike? 
+          val fromTop = brick.box.top - y
+          val fromBottom = brick.box.bottom + 10 - y
+          
+          val fromLeft = brick.box.left - x
+          val fromRight = brick.box.right - x
+
+          val ydiff = min(abs(fromTop), abs(fromBottom))
+          val xdiff = min(abs(fromLeft), abs(fromRight)) 
+
+          if (xdiff == ydiff) { 
+            val (xd, yd) = (v.x, v.y)
+            if (xd < yd) (xd * -1, yd) else (xd, yd * -1)
+          } else if(min(xdiff, ydiff) == xdiff) (v.x * - 1, v.y)
+          else (v.x, v.y * -1)
+        case None => v
+      }
 
       val mag = v * speed
 
@@ -204,10 +226,49 @@ object Start extends FriendlyScene {
     }
   }
 
+  class Brick(pos: (Float, Float), 
+              color: (Float, Float, Float) = (0.5f, 0, 0)) {
+    val (x, y) = pos
+    val box = AABox(x, y, 49, 24)
+    
+    def draw = {
+      scene.draw(box, rgb = color)(FilledAABoxRenderer)
+    }  
+  }
+
+  object Bricks {
+    val bricks = collection.mutable.ListBuffer[Brick]()
+
+    init   
+
+    def init {
+      (0 until 10) foreach { i =>
+        bricks += new Brick((25 + (i * 50), 50))
+        bricks += new Brick((25 + (i * 50), 100))
+        bricks += new Brick((25 + (i * 50), 150))
+        bricks += new Brick((25 + (i * 50), 175))
+      }
+
+      (0 until 3) foreach { i =>
+        bricks += new Brick((25 + (1 * 50), 25 + ((i * 2) * 25))) 
+        bricks += new Brick((25 + (2 * 50), 25 + ((i * 2) * 25))) 
+        bricks += new Brick((25 + (3 * 50), 25 + ((i * 2) * 25))) 
+        bricks += new Brick((25 + (6 * 50), 25 + ((i * 2) * 25))) 
+        bricks += new Brick((25 + (7 * 50), 25 + ((i * 2) * 25))) 
+        bricks += new Brick((25 + (8 * 50), 25 + ((i * 2) * 25))) 
+      }
+    }
+ 
+    def draw = {
+      bricks.foreach(_.draw)
+    }
+  }
+
   def update = {
+    Bricks.draw
+    Ball.draw
     World.draw 
     Paddle.draw
-    Ball.draw
 
     val d = if (left) Paddle.speed * -1 else if (right) Paddle.speed else 0
     
@@ -226,18 +287,11 @@ object Start extends FriendlyScene {
 
     sync
 
-    if (escape) End
-    //else if(char('\n')) Paused
-    else None
-  }
-}
-
-object Paused extends FriendlyScene { 
-  def update = {
-    draw("Paused", position = (350, 300))
-
-    if (escape) End
-    else if (char('\n')) Start
+    if (Bricks.bricks.length == 0) {
+      Bricks.init
+      Ball.init
+      Title
+    } else if (escape) End
     else None
   }
 }
