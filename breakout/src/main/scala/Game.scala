@@ -151,7 +151,7 @@ object Start extends FriendlyScene {
   object Ball {
     var atRest = true
     var x = Paddle.x + 30
-    var y = Paddle.y - 7
+    var y = Paddle.y - 8
     
     var speed = 4f
     var v: Vector = Vector(0, -1)
@@ -159,7 +159,7 @@ object Start extends FriendlyScene {
     def init = {
       atRest = true
       x = Paddle.x + 30
-      y = Paddle.y - 5
+      y = Paddle.y - 8
     } 
 
     def ball = Circle((x, y), 10)
@@ -170,7 +170,7 @@ object Start extends FriendlyScene {
 
     def fire = {
       v = Vector(1.5f, -1.5f)
-      y = 535
+      y = 537
       atRest = false
     }
 
@@ -200,6 +200,7 @@ object Start extends FriendlyScene {
         case Some(brick) => 
           Bricks.bricks -= brick
           // Where did the ball strike? 
+          // I'm sure there's a better way to do this 
           val fromTop = brick.box.top - y
           val fromBottom = brick.box.bottom + 10 - y
           
@@ -281,7 +282,7 @@ object Start extends FriendlyScene {
       Ball.x += d 
     }
 
-    if (space) Ball.fire 
+    if (space && Ball.atRest) Ball.fire 
 
     Ball.update
 
