@@ -105,9 +105,9 @@ object Title extends FriendlyScene {
 object Start extends FriendlyScene { 
   scene =>
 
-  val grey = (0.8f, 0.8f, 0.8f)
-
   object World {
+    val grey = (0.8f, 0.8f, 0.8f)
+
     val leftSide = AABox(0, 0, 25, 600)
     val rightSide = AABox(525, 0, 275, 600)
     val topSide = AABox(25, 0, 525, 25) 
@@ -125,13 +125,24 @@ object Start extends FriendlyScene {
 
     var speed = 7f
 
-    def draw = {
+    def paddle = { 
       val center = AABox(x, y, 60, 20)
       val leftSide = Circle((x, y + 10), 10)
       val rightSide = Circle((x + 60, y + 10), 10)
-      scene.draw(leftSide, rgb = (0.5f, 0.5f, 0))(FilledCircleRenderer)
-      scene.draw(rightSide, rgb = (0.5f, 0.5f, 0))(FilledCircleRenderer)
-      scene.draw(center, rgb = (0.5f, 1f, 0.3f))(FilledAABoxRenderer)
+      (leftSide, center, rightSide)
+    }
+
+    def inBounds = {
+      val (l, c, r) = paddle
+      !l.bounds.intersects(World.leftSide) &&
+      !r.bounds.intersects(World.rightSide)
+    }
+
+    def draw = {
+      val (l, c, r) = paddle
+      scene.draw(l, rgb = (0.5f, 0.5f, 0))(FilledCircleRenderer)
+      scene.draw(r, rgb = (0.5f, 0.5f, 0))(FilledCircleRenderer)
+      scene.draw(c, rgb = (0.5f, 1f, 0.3f))(FilledAABoxRenderer)
     }
   }
 
@@ -139,15 +150,39 @@ object Start extends FriendlyScene {
     var atRest = true
     var x = Paddle.x + 30
     var y = Paddle.y - 7
+    
+    var speed = 5f
+    var v: Vector = Vector(0, -1)
 
     def init = {
-      var atRest = true
-      var x = Paddle.x + 30
-      var y = Paddle.y - 5
+      atRest = true
+      x = Paddle.x + 30
+      y = Paddle.y - 5
     } 
 
+    def ball = Circle((x, y), 10)
+
     def draw = {
-      scene.draw(Circle((x, y), 10))(FilledCircleRenderer)
+      scene.draw(ball)(FilledCircleRenderer)
+    }
+
+    def update = if (!atRest) {
+      v = if (ball.bounds.intersects(World.topSide)) {
+        (0, 1)
+      } else if (ball.bounds.intersects(World.leftSide)) {
+        (1, 0)
+      } else if (ball.bounds.intersects(World.rightSide)) {
+        (-1, 0)
+      } else if (ball.bounds.intersects(Paddle.paddle._2)) {
+        (0, -1)
+      } else {
+        v
+      }
+
+      y = y + v.y * speed
+      x = x + v.x
+      
+      if (y > 600) init 
     }
   }
 
@@ -158,10 +193,18 @@ object Start extends FriendlyScene {
 
     val d = if (left) Paddle.speed * -1 else if (right) Paddle.speed else 0
     
-    Paddle.x += d 
-    if (Ball.atRest) {
+    Paddle.x += d
+    val inBounds = Paddle.inBounds
+
+    if(!inBounds) Paddle.x = Paddle.x + d * -1 
+
+    if (Ball.atRest && inBounds) {
       Ball.x += d 
     }
+
+    if (space) Ball.atRest = false
+
+    Ball.update
 
     sync
 
