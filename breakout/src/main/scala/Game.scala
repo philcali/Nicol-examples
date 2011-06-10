@@ -196,25 +196,44 @@ object Start extends FriendlyScene {
       val b = ball
       v = checkBall(ball)
 
-      v = Bricks.bricks.find(br => b.bounds.intersects(br.box)) match {
+      val ballbounds = b.bounds
+      v = Bricks.bricks.find(br => ballbounds.intersects(br.box)) match {
         case Some(brick) => 
           Bricks.bricks -= brick
+          val box = brick.box
+
           // Where did the ball strike? 
           // I'm sure there's a better way to do this 
-          val fromTop = brick.box.top - y
-          val fromBottom = brick.box.bottom + 10 - y
+          val points = List(
+            (ballbounds.left, ballbounds.top),
+            (ballbounds.right, ballbounds.top),
+            (ballbounds.left, ballbounds.bottom),
+            (ballbounds.right, ballbounds.bottom)
+          )
+
+          // Found out which points intersected
+          val contained = points.filter { p =>
+            val (px, py) = p
+            (px >= box.left && px <= box.right) && (py >= box.top && py <= box.bottom)
+          }
+
+          // If there are two points, then it was a "flat" hit...
+          // Flat hits just reverse the magnitude
+          val s = contained.size
+          if (s > 1) {
+            // left or right side means horizontal shift
+            val point = contained.head
+            val lrs = contained.foldLeft(true)(_ && _._1 == point._1)
+            if (lrs) (v.x * -1, v.y) else (v.x, v.y * -1)
+          } else {
+            val (px, py) = contained.head
+            val fromX = min(abs(px - box.left), abs(px - box.right))
+            val fromY = min(abs(py - box.top), abs(py - box.bottom))
+
+            if (min(fromX, fromY) == fromX) (v.x * -1, v.y) else (v.x, v.y * -1) 
+          }
           
-          val fromLeft = brick.box.left - x
-          val fromRight = brick.box.right - x
-
-          val ydiff = min(abs(fromTop), abs(fromBottom))
-          val xdiff = min(abs(fromLeft), abs(fromRight)) 
-
-          if (xdiff == ydiff) { 
-            val (xd, yd) = (v.x, v.y)
-            if (xd < yd) (xd * -1, yd) else (xd, yd * -1)
-          } else if(min(xdiff, ydiff) == xdiff) (v.x * - 1, v.y)
-          else (v.x, v.y * -1)
+          //(v.x, v.y * -1)
         case None => v
       }
 
