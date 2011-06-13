@@ -14,17 +14,9 @@ object NicalExamples extends Build {
     name,
     file(name),
     settings = generalSettings ++ Seq (
-      mainClass in (Compile, run) <<= (name) { 
-        Some("nicol.examples.%s.App".format(_))
-      }
+      mainClass in (Compile, run) := Some("nicol.examples.%s.App".format(name)) 
     )
   ) 
-
-  lazy val examples = Project (
-    "nicol-examples",
-    file("."),
-    settings = generalSettings
-  ) aggregate (breakout, pong, showcaser, squares)
 
   lazy val breakout = genProject("breakout")
   lazy val showcaser = genProject("showcaser")
