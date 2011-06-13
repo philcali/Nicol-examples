@@ -18,6 +18,12 @@ object NicalExamples extends Build {
     )
   ) 
 
+  lazy val examples = Project (
+    "nicol-examples",
+    file("."),
+    settings = generalSettings
+  ) aggregate (breakout, pong, showcaser, squares)
+
   lazy val breakout = genProject("breakout")
   lazy val showcaser = genProject("showcaser")
   
