@@ -1,1 +1,1 @@
-libraryDependencies += "com.github.philcali" %% "xsbt-lwjgl-plugin" % "0.0.1"
+libraryDependencies += "com.github.philcali" %% "sbt-lwjgl-plugin" % "3.0.1"
